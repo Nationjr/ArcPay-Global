@@ -1,26 +1,44 @@
-const { Resend } = require('resend')
-
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const r = req.body
-  if (!r?.email) return res.status(400).json({ error: 'Missing email' })
+  const body = req.body
+  if (!body?.email) return res.status(400).json({ error: 'Missing email' })
   if (!process.env.RESEND_API_KEY) return res.status(500).json({ error: 'RESEND_API_KEY not configured' })
 
-  const date = new Date(r.timestamp || Date.now()).toLocaleString('en-US', {
-    dateStyle: 'medium', timeStyle: 'short',
-  })
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'ArcPay Global POS <onboarding@resend.dev>',
+        to: [body.email],
+        subject: `Receipt — $${Number(body.amount).toFixed(2)} USDC payment confirmed`,
+        html: buildHtml(body),
+      }),
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.message ?? 'Resend error')
+    res.status(200).json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message ?? 'Unknown error' })
+  }
+}
+
+function buildHtml(r) {
+  const date = new Date(r.timestamp).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
   const hasRealHash = r.txHash && r.txHash !== 'qr-payment' && r.txHash !== ''
   const txUrl = `${r.explorerBase}/tx/${r.txHash}`
 
-  const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>ArcPay Receipt</title></head>
+<head><meta charset="UTF-8"/><title>ArcPay Receipt</title></head>
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 16px;">
   <tr><td align="center">
@@ -43,8 +61,8 @@ module.exports = async function handler(req, res) {
       </td></tr>
       <tr><td style="padding:24px 32px 0;">
         <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-          <tr style="background:#f9fafb;"><td style="padding:11px 16px;font-size:13px;color:#6b7280;">Invoice</td><td style="padding:11px 16px;font-size:13px;color:#111827;font-weight:600;text-align:right;">${String(r.invoiceId || '').slice(0,10)}…</td></tr>
-          <tr style="background:#fff;"><td style="padding:11px 16px;font-size:13px;color:#6b7280;">Date</td><td style="padding:11px 16px;font-size:13px;color:#111827;font-weight:600;text-align:right;">${date}</td></tr>
+          <tr style="background:#f9fafb;"><td style="padding:11px 16px;font-size:13px;color:#6b7280;">Date</td><td style="padding:11px 16px;font-size:13px;color:#111827;font-weight:600;text-align:right;">${date}</td></tr>
+          <tr style="background:#fff;"><td style="padding:11px 16px;font-size:13px;color:#6b7280;">Amount</td><td style="padding:11px 16px;font-size:13px;color:#111827;font-weight:600;text-align:right;">$${Number(r.amount).toFixed(2)} USDC</td></tr>
           <tr style="background:#f9fafb;"><td style="padding:11px 16px;font-size:13px;color:#6b7280;">Platform fee (0.5%)</td><td style="padding:11px 16px;font-size:13px;color:#111827;font-weight:600;text-align:right;">$${Number(r.fee).toFixed(4)} USDC</td></tr>
           <tr style="background:#fff;"><td style="padding:11px 16px;font-size:13px;color:#6b7280;">Net revenue</td><td style="padding:11px 16px;font-size:13px;color:#111827;font-weight:600;text-align:right;">$${Number(r.net).toFixed(2)} USDC</td></tr>
         </table>
@@ -58,28 +76,14 @@ module.exports = async function handler(req, res) {
       <tr><td style="padding:16px 32px 0;text-align:center;">
         <span style="display:inline-block;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:5px 14px;font-size:12px;color:#1d4ed8;">⚡ Zero gas charged · Powered by Arc USDC</span>
       </td></tr>
-      <tr><td style="padding:28px 32px 32px;text-align:center;">
+      <tr><td style="padding:28px 32px 32px;text-align:center;border-top:1px solid #f3f4f6;margin-top:20px;">
         <div style="color:#9ca3af;font-size:12px;line-height:1.6;">
           This receipt was generated automatically by ArcPay Global POS.<br/>
-          ${hasRealHash ? `Tx: <span style="font-family:monospace;font-size:11px;">${String(r.txHash).slice(0,18)}…</span>` : 'Payment method: QR wallet transfer'}
+          ${hasRealHash ? `Tx: <span style="font-family:monospace;font-size:11px;">${r.txHash.slice(0,18)}…</span>` : 'Payment method: QR wallet transfer'}
         </div>
       </td></tr>
     </table>
   </td></tr>
 </table>
 </body></html>`
-
-  try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    const { error } = await resend.emails.send({
-      from: 'ArcPay Global POS <receipts@resend.dev>',
-      to: [r.email],
-      subject: `Receipt — $${Number(r.amount).toFixed(2)} USDC payment confirmed`,
-      html,
-    })
-    if (error) return res.status(500).json({ error: error.message })
-    return res.status(200).json({ ok: true })
-  } catch (err) {
-    return res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' })
-  }
 }
