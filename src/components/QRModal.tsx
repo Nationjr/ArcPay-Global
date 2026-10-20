@@ -38,6 +38,7 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
   const nfcAbortRef = useRef<AbortController | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const detectedRef = useRef(false)
+  const sendReceiptRef = useRef<(txHash?: string) => Promise<void>>(async () => {})
 
   // Check if Web NFC is available (Chrome on Android only)
   const nfcSupported = typeof window !== 'undefined' && 'NDEFReader' in window
@@ -80,13 +81,14 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
         setDetected(true)  // eslint-disable-line react/set-state-in-effect
         toast.success('Payment detected!')
         // Send receipt then fire success — modal must stay mounted until receipt is dispatched
-        void sendReceipt(txHash).then(() => onSuccess(txHash))
+        void sendReceiptRef.current(txHash).then(() => onSuccess(txHash))
       }
     },
   })
 
   // Sends receipt email — returns a promise so callers can await before closing
   const sendReceipt = useCallback(async (txHash?: string): Promise<void> => {
+    // ref is kept in sync below so stale closures (e.g. onLogs) always call the latest version
     const email = receiptEmail.trim()
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
     const fee = totalAmount * 0.005 / 1.005
@@ -111,6 +113,9 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
     }
   }, [receiptEmail, totalAmount])
 
+  // Keep ref in sync so the stale onLogs closure always sees the latest sendReceipt
+  useEffect(() => { sendReceiptRef.current = sendReceipt }, [sendReceipt])
+
   // Render QR code
   useEffect(() => {
     if (!canvasRef.current || !paymentUri) return
@@ -130,7 +135,7 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
   }
 
   const handleManualPaid = () => {
-    void sendReceipt(undefined).then(() => {
+    void sendReceiptRef.current(undefined).then(() => {
       onSuccess(undefined)
       onClose()
     })

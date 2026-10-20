@@ -846,3 +846,41 @@
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792407566384}
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792409080175}
 {"level":"debug","message":"[vite] connected.","timestamp":1792423315793}
+{"level":"debug","message":"[vite] connected.","timestamp":1792423721678}
+{"level":"debug","message":"[vite] connected.","timestamp":1792424948593}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792426441472}
+{"level":"debug","message":"[vite] connected.","timestamp":1792426556829}
+{"level":"debug","message":"[vite] connected.","timestamp":1792427616069}
+{"level":"debug","message":"[vite] connected.","timestamp":1792427735619}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792439438364}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792439549390}
+{"level":"debug","message":"[vite] connected.","timestamp":1792439568707}
+{"level":"debug","message":"[vite] connected.","timestamp":1792440917889}
+{"level":"debug","message":"[vite] connected.","timestamp":1792441093023}
+{"level":"debug","message":"[vite] connected.","timestamp":1792442706666}
+{"level":"debug","message":"[vite] connected.","timestamp":1792444181199}
+{"level":"debug","message":"[vite] connected.","timestamp":1792444253376}
+{"level":"debug","message":"[vite] connected.","timestamp":1792444387026}
+{"level":"debug","message":"[vite] connected.","timestamp":1792444400777}
+{"level":"debug","message":"[vite] connected.","timestamp":1792444926414}
+{"level":"debug","message":"[vite] connected.","timestamp":1792498428873}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792500844404}
+{"level":"debug","message":"[vite] connected.","timestamp":1792513941596}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514467303}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514467303}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514494408}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514494408}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514494627}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514494627}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514523489}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514523490}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514523498}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514523498}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514551735}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514551735}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514551740}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514551740}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514581454}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514581454}
+{"level":"debug","message":"[vite] hot updated: /src/components/QRModal.tsx","timestamp":1792514606438}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792514606438}
