@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ConnectKitButton } from 'connectkit'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SplashScreen } from './components/SplashScreen'
 import { ShoppingBag, BarChart2 } from 'lucide-react'
 import { TokenUSDC } from '@web3icons/react'
 import { POSKeypad } from './components/POSKeypad'
@@ -33,8 +34,14 @@ type Tab = 'pos' | 'analytics'
 type View = 'main' | 'settings'
 
 export default function App() {
+  const [splash, setSplash] = useState(true)
   const [tab, setTab] = useState<Tab>('pos')
   const [view, setView] = useState<View>('main')
+
+  useEffect(() => {
+    const t = setTimeout(() => setSplash(false), 2500)
+    return () => clearTimeout(t)
+  }, [])
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       return { ...defaultSettings, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') as AppSettings) }
@@ -47,6 +54,10 @@ export default function App() {
   }
 
   return (
+    <>
+    <AnimatePresence>
+      {splash && <SplashScreen key="splash" />}
+    </AnimatePresence>
     <div className="min-h-dvh flex flex-col" style={{ background: 'var(--bg-gradient)' }}>
       {/* Header */}
       <header className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between" style={{ background: 'var(--surface-strong)', borderBottom: '1px solid var(--border)', backdropFilter: 'blur(12px)' }}>
@@ -108,5 +119,6 @@ export default function App() {
         </nav>
       )}
     </div>
+    </>
   )
 }
