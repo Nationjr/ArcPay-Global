@@ -7,6 +7,7 @@ interface Settings {
   supplierBps: number
   taxBps: number
   yieldEnabled: boolean
+  merchantFeeRecipient: string
 }
 
 interface Props {
@@ -39,6 +40,22 @@ export function SettingsPanel({ settings, onSave, onBack }: Props) {
           <div className="display font-bold text-xl" style={{ color: 'var(--ink)' }}>Settings</div>
           <div className="text-xs" style={{ color: 'var(--muted)' }}>Configure your POS</div>
         </div>
+      </div>
+
+      {/* Fee recipient */}
+      <div className="rounded-2xl p-5 space-y-3" style={{ background: 'var(--surface-strong)', border: '1px solid var(--border)' }}>
+        <div>
+          <div className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>Your Fee Recipient</div>
+          <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>Receives your 40% share of the 0.5% platform fee. Defaults to your connected wallet.</div>
+        </div>
+        <input
+          type="text"
+          value={local.merchantFeeRecipient}
+          onChange={e => setLocal(p => ({ ...p, merchantFeeRecipient: e.target.value }))}
+          placeholder="0x... leave blank to use your wallet"
+          className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors mono"
+          style={{ background: 'var(--surface-muted)', border: '1px solid var(--border)', color: 'var(--ink)' }}
+        />
       </div>
 
       {/* Supplier */}

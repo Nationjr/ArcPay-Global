@@ -7,7 +7,6 @@ import { TxRecords, type TxRecord } from '../utils/txRecords'
 import { buildTxExplorerUrl } from '@/onchain-facts'
 
 const ARC_TESTNET_CHAIN_ID = 5042002
-const PLATFORM_FEE_RECIPIENT = '0x164C2cbF41832439e517a9605B5f12BE2e26E0Ef'
 
 interface Props {
   contractAddress: `0x${string}` | null
@@ -99,7 +98,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
     { icon: DollarSign, label: 'Total Volume', value: totalVolume !== undefined ? fmt(totalVolume) : `$${dailyTotal.toFixed(2)}`, sub: 'All-time onchain' },
     { icon: TrendingUp, label: 'Net Revenue', value: fmt(liquidBalance), sub: 'Your liquid balance' },
     { icon: FileText, label: 'Tax Reserve', value: fmt(taxReserve), sub: 'Collected for taxes' },
-    { icon: BarChart2, label: 'Platform Fees', value: totalFees !== undefined ? fmt(totalFees) : `$${dailyFees.toFixed(4)}`, sub: `To ${PLATFORM_FEE_RECIPIENT.slice(0,8)}…` },
+    { icon: BarChart2, label: 'Platform Fees', value: totalFees !== undefined ? fmt(totalFees) : `$${dailyFees.toFixed(4)}`, sub: '0.5% collected all-time' },
   ]
 
   return (
@@ -192,13 +191,6 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Fee recipient info */}
-      <div className="rounded-2xl p-4 text-xs" style={{ background: 'var(--surface-muted)', border: '1px solid var(--border)' }}>
-        <div className="font-semibold mb-1" style={{ color: 'var(--ink)' }}>Platform Fee Recipient</div>
-        <div className="mono break-all" style={{ color: 'var(--muted)' }}>{PLATFORM_FEE_RECIPIENT}</div>
-        <div className="mt-1" style={{ color: 'var(--subtle)' }}>0.5% of every transaction, auto-swept on settlement</div>
       </div>
 
       {/* Export */}

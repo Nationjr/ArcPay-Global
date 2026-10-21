@@ -10,7 +10,7 @@ import { AnalyticsTab } from './components/AnalyticsTab'
 
 // Contract wiring
 import arcPayArtifact from '../contracts/out/ArcPayCore.sol/ArcPayCore.json'
-const CONTRACT_ADDRESS = '0x31d5428d1981332db5ccc47f54db86b45e86bc15' as `0x${string}`
+const CONTRACT_ADDRESS = '0x11d55c6730d153ae511c84da12d0418cae384bc5' as `0x${string}`
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CONTRACT_ABI = arcPayArtifact.abi as any[]
 
@@ -21,6 +21,7 @@ interface AppSettings {
   supplierBps: number
   taxBps: number
   yieldEnabled: boolean
+  merchantFeeRecipient: string
 }
 
 const defaultSettings: AppSettings = {
@@ -28,6 +29,7 @@ const defaultSettings: AppSettings = {
   supplierBps: 7000,
   taxBps: 1000,
   yieldEnabled: false,
+  merchantFeeRecipient: '',
 }
 
 type Tab = 'pos' | 'analytics'

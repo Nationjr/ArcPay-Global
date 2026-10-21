@@ -14,7 +14,7 @@ Full-stack USDC Point of Sale dApp on Arc. Merchants enter amounts, generate QR 
 
 | Contract | Chain | Address |
 |---|---|---|
-| ArcPayCore | Arc Testnet (5042002) | 0x31d5428d1981332db5ccc47f54db86b45e86bc15 |
+| ArcPayCore | Arc Testnet (5042002) | 0x11d55c6730d153ae511c84da12d0418cae384bc5 |
 | ArcPayCore (v1, deprecated) | Arc Testnet (5042002) | 0x5c544a347bb7811dcfde600204d42b118c774d58 |
 
 ## Platform Fee Recipient

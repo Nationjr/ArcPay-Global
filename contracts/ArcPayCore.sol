@@ -13,6 +13,9 @@ contract ArcPayCore is AccessControl, ReentrancyGuard, EIP712 {
 
     uint256 public constant PLATFORM_FEE_BPS = 50;
     uint256 public constant MAX_BPS = 10_000;
+    /// @dev Platform owner receives 60% of the platform fee; merchant fee recipient gets 40%.
+    uint256 public constant PLATFORM_OWNER_SHARE_BPS = 6000;  // 60% of platform fee
+    uint256 public constant MERCHANT_FEE_SHARE_BPS   = 4000;  // 40% of platform fee
 
     bytes32 public constant CASHIER_ROLE = keccak256("CASHIER_ROLE");
     bytes32 private constant PAYMENT_PAYLOAD_TYPEHASH =
@@ -77,11 +80,16 @@ contract ArcPayCore is AccessControl, ReentrancyGuard, EIP712 {
     mapping(address => bool) public yieldEnabled;
     mapping(address => uint256) private nonces;
     mapping(address => address) public payoutAddress;
+    /// @dev Merchant-chosen address that receives 40% of the platform fee.
+    /// Defaults to the merchant wallet itself if not set.
+    mapping(address => address) public merchantFeeRecipient;
 
     address public immutable usdc;
-    address public immutable platformFeeRecipient;
+    address public immutable platformFeeRecipient; // receives 60% of platform fee
 
-    uint256 public pendingPlatformFees;
+    uint256 public pendingPlatformFees;       // platform owner's 60% share
+    uint256 public pendingMerchantFees;       // per-merchant 40% shares tracked separately
+    mapping(address => uint256) public merchantFeeBalance; // per-merchant pending fee balance
     uint256 public totalPlatformFeesCollected;
     uint256 public totalVolumeProcessed;
     uint256[] public dailyVolumes;
@@ -306,6 +314,24 @@ contract ArcPayCore is AccessControl, ReentrancyGuard, EIP712 {
         emit PayoutAddressSet(msg.sender, newAddress);
     }
 
+    /// @notice Set the address that receives the merchant's 40% share of the platform fee.
+    /// Defaults to the merchant's own wallet if never called.
+    function setMerchantFeeRecipient(address recipient) external {
+        if (recipient == address(0)) revert ZeroAddress();
+        merchantFeeRecipient[msg.sender] = recipient;
+    }
+
+    /// @notice Withdraw accrued 40% merchant fee share.
+    function withdrawMerchantFees() external nonReentrant {
+        address recipient = merchantFeeRecipient[msg.sender];
+        if (recipient == address(0)) recipient = msg.sender;
+        uint256 amount = merchantFeeBalance[msg.sender];
+        if (amount == 0) revert InvalidAmount();
+        merchantFeeBalance[msg.sender] = 0;
+        pendingMerchantFees -= amount;
+        IERC20(usdc).safeTransfer(recipient, amount);
+    }
+
     function setYieldEnabled(address merchant, bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (merchant == address(0)) revert ZeroAddress();
         yieldEnabled[merchant] = enabled;
@@ -393,7 +419,12 @@ contract ArcPayCore is AccessControl, ReentrancyGuard, EIP712 {
         uint256 netRevenue
     ) internal {
         if (platformFee != 0) {
-            pendingPlatformFees += platformFee;
+            // 60% to platform owner, 40% to merchant's chosen fee recipient
+            uint256 ownerShare    = (platformFee * PLATFORM_OWNER_SHARE_BPS) / MAX_BPS;
+            uint256 merchantShare = platformFee - ownerShare; // remainder avoids dust
+            pendingPlatformFees += ownerShare;
+            merchantFeeBalance[merchant] += merchantShare;
+            pendingMerchantFees += merchantShare;
         }
 
         if (supplierShare != 0) {
