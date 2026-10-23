@@ -1,21 +1,30 @@
 # ArcPay Global POS
 
-A full-stack USDC Point of Sale application built on [Arc](https://arc.io) — Circle's blockchain where USDC is the native gas token. Merchants can accept USDC payments from any self-custody wallet via QR code or NFC tap, with automatic payment detection, email receipts, FX conversion, and onchain analytics.
+A USDC point-of-sale application that lets merchants accept instant crypto payments via QR code or NFC tap — no card terminal, no customer app required.
+
+Built with [Arc Studio](https://studio.arc.io)
+
+---
+
+## What It Does
+
+Merchants open the app, key in a charge amount, and a QR code appears instantly. The customer scans with any self-custody wallet (MetaMask, Trust Wallet, Rabby, Coinbase Wallet) and sends USDC directly. The app detects the payment onchain automatically and shows a success screen. An email receipt is sent to the customer.
+
+Every transaction deducts a 0.5% platform fee added on top of the merchant's keyed amount — the merchant always receives exactly what they charged. That fee is split 60/40: 60% to the platform and 40% to an address of the merchant's choosing (configured in Settings).
 
 ---
 
 ## Features
 
-- **QR Code Checkout** — generates a real EIP-681 URI or plain address QR; works with MetaMask, Trust Wallet, Coinbase Wallet, Rabby, Rainbow, and more
-- **NFC Tap Payments** — Android Chrome Web NFC support; merchant arms the radio, customer taps their phone to receive the payment URI
-- **Live FX Conversion** — real-time exchange rates from `open.er-api.com`, refreshed every 60 seconds with a live/stale/offline indicator
-- **Automatic Payment Detection** — watches for incoming USDC Transfer events onchain; success overlay fires automatically when payment lands
-- **Email Receipts** — Resend-powered HTML receipts sent to the customer, with a real Arc Explorer link for onchain transactions
-- **Platform Fee Model** — 0.5% fee added on top of the merchant's charge (customer pays gross, merchant receives net in full)
-- **Onchain Analytics** — live contract reads every 10 seconds: total volume processed, net revenue, tax reserve, platform fees collected
-- **Transaction History** — localStorage-backed per-session ledger with CSV export and Arc Explorer deep links
-- **Supplier Revenue Split** — configurable third-party revenue share baked into every invoice at the contract level
-- **Manual Confirmation Fallback** — "Mark as paid" button for cases where auto-detection doesn't fire
+- **Instant QR checkout** — tap Charge, QR appears, customer pays from any wallet
+- **NFC tap payments** — Android Chrome only; merchant arms the NFC radio, customer taps their phone
+- **Live FX conversion** — real-time exchange rates refreshed every 60 seconds, with live/stale/offline indicator
+- **Auto-detection** — Transfer event watcher fires the success overlay the moment payment lands onchain
+- **Email receipts** — HTML receipt with Arc Explorer transaction link sent via Resend
+- **Analytics dashboard** — total volume, net revenue, tax reserve, platform fees, and transaction history with CSV export
+- **60/40 fee split** — platform takes 60%, merchant's chosen address receives 40%
+- **Wallet compatibility** — address mode QR works in every wallet; EIP-681 mode pre-fills amount in MetaMask, Trust, and Coinbase
+- **Security hardened** — rate limiting, CORS, input validation, CSP headers, sanitized email templates
 
 ---
 
@@ -24,64 +33,65 @@ A full-stack USDC Point of Sale application built on [Arc](https://arc.io) — C
 | Layer | Technology |
 |---|---|
 | Blockchain | Arc Testnet (chain ID 5042002) — USDC as native gas |
-| Smart Contract | Solidity 0.8.24, OpenZeppelin, Foundry |
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
-| Onchain hooks | wagmi v2, viem, ConnectKit |
-| Email | Resend API |
+| Smart contract | Solidity 0.8.28, OpenZeppelin, Foundry |
+| Frontend | React 18, wagmi v2, ConnectKit, Vite, Tailwind CSS |
+| Animations | Framer Motion |
 | FX rates | open.er-api.com (free, no key required) |
-| Backend | Bun HTTP server (port 3001) |
-| Package manager | Bun |
+| Email | Resend API |
+| Deployment | Vercel (frontend + serverless API) |
 
 ---
 
 ## Smart Contract
 
-**`ArcPayCore.sol`** — deployed on Arc Testnet at:
-```
-0x31d5428d1981332db5ccc47f54db86b45e86bc15
-```
+**Contract:** `ArcPayCore.sol`
+**Network:** Arc Testnet
+**Address:** `0x11d55c6730d153ae511c84da12d0418cae384bc5`
+**Explorer:** https://explorer.testnet.arc.io/address/0x11d55c6730d153ae511c84da12d0418cae384bc5
 
-### Key functions
+### Key Functions
 
-| Function | Description |
-|---|---|
-| `initializeInvoice` | Creates an invoice with merchant, supplier, tax, and fee parameters |
-| `executePayment` | Pulls USDC from caller, splits it, credits all parties |
-| `executeBatchOfflinePayments` | EIP-712 signed batch settlement (CASHIER_ROLE gated) |
-| `settleQrPayment` | Settles a payment for USDC already held by the contract |
-| `withdrawMerchantBalance` | Merchant pulls their net revenue |
-| `withdrawSupplierBalance` | Supplier pulls their revenue share |
-| `sweepToYield` / `unsweepFromYield` | Admin yield management |
+| Function | Who can call | What it does |
+|---|---|---|
+| `initializeInvoice` | CASHIER_ROLE | Creates a new invoice with amount, supplier, and tax splits |
+| `executePayment` | CASHIER_ROLE | Pulls USDC from caller and records the full split |
+| `setMerchantFeeRecipient` | Merchant | Sets the address that receives the merchant's 40% fee share |
+| `setPayoutAddress` | Merchant | Sets the address merchant net revenue is sent to |
+| `withdrawMerchantBalance` | Merchant | Withdraws accumulated net revenue |
+| `withdrawMerchantFees` | Merchant | Withdraws the merchant's 40% fee share |
+| `withdrawPlatformFees` | Admin | Withdraws the platform's 60% fee share |
 
 ### Roles
-- `DEFAULT_ADMIN_ROLE` — full access
-- `CASHIER_ROLE` — can execute and batch-settle payments
-- `MERCHANT_ROLE` — can initialize invoices and withdraw balances
+
+| Role | Purpose |
+|---|---|
+| `DEFAULT_ADMIN_ROLE` | Full admin — grant/revoke roles, emergency functions |
+| `CASHIER_ROLE` | Initialize invoices and execute payments |
 
 ---
 
 ## Project Structure
 
 ```
-ArcPay-Global/
+├── api/
+│   └── receipt.js          # Vercel serverless function — email receipt via Resend
 ├── contracts/
-│   └── ArcPayCore.sol          # Payment contract
+│   ├── ArcPayCore.sol       # Main payment contract
+│   └── out/                 # Compiled artifacts (committed for Vercel build)
 ├── src/
+│   ├── App.tsx              # Root — wagmi config, wallet connection, tab routing
 │   ├── components/
-│   │   ├── POSKeypad.tsx        # Main POS interface
-│   │   ├── QRModal.tsx          # QR + NFC checkout modal
-│   │   └── AnalyticsTab.tsx     # Onchain analytics + history
+│   │   ├── SplashScreen.tsx # Animated launch screen
+│   │   ├── POSKeypad.tsx    # Main POS interface — keypad, FX, charge flow
+│   │   ├── QRModal.tsx      # QR/NFC checkout modal, payment detection
+│   │   └── AnalyticsTab.tsx # Transaction history, onchain stats, CSV export
 │   ├── hooks/
-│   │   └── useFxRates.ts        # Live FX rate polling hook
-│   ├── utils/
-│   │   └── txRecords.ts         # localStorage transaction ledger
-│   ├── onchain-facts.ts         # Chain/contract addresses registry
-│   ├── onchain-money.ts         # USDC amount utilities
-│   └── config.ts                # wagmi config + RPC transport
-├── server/
-│   ├── index.ts                 # Bun HTTP server (port 3001)
-│   └── receipt.ts               # Resend email receipt logic
-└── foundry.toml                 # Foundry config
+│   │   └── useFxRates.ts    # Live FX rate polling with stale/offline fallback
+│   └── utils/
+│       └── txRecords.ts     # localStorage transaction record utility
+├── vercel.json              # Vercel routing + security headers
+└── server/
+    └── index.ts             # Local dev receipt server (port 3001)
 ```
 
 ---
@@ -89,37 +99,72 @@ ArcPay-Global/
 ## Getting Started
 
 ### Prerequisites
-- [Bun](https://bun.sh) v1.x
-- [Foundry](https://getfoundry.sh)
-- A Resend API key (for email receipts)
 
-### Install & Run
+- [Bun](https://bun.sh) v1.0+
+- [Foundry](https://getfoundry.sh) (for contract work)
+- A wallet with Arc Testnet USDC (see Funding below)
+
+### Install
 
 ```bash
-# Install dependencies
 bun install
-
-# Start the frontend (Vite dev server on port 5173)
-bun run dev
-
-# Start the receipt email backend (port 3001)
-bun run server/index.ts
 ```
 
 ### Environment Variables
 
+| Variable | Purpose |
+|---|---|
+| `RESEND_API_KEY` | Resend API key for sending email receipts |
+
 Create a `.env` file in the project root:
 
-```env
-RESEND_API_KEY=re_your_api_key_here
+```
+RESEND_API_KEY=your_resend_api_key_here
 ```
 
-### Build Contract
+### Run (development)
 
 ```bash
-cd contracts
-forge build
+# Start the frontend
+bun run dev
+
+# Start the receipt email server (separate terminal)
+bun run server/index.ts
 ```
+
+### Build
+
+```bash
+bunx vite build
+```
+
+### Check (lint + typecheck)
+
+```bash
+bun run check
+```
+
+### Contract (Foundry)
+
+```bash
+# Build
+forge build
+
+# Test
+forge test
+```
+
+---
+
+## Funding for Testing
+
+1. Open Arc Studio and click **"Get test USDC"** in the sidebar
+2. Connect your wallet and drip test USDC to it
+3. Add Arc Testnet to your mobile wallet:
+   - RPC URL: `https://rpc.testnet.arc.io`
+   - Chain ID: `5042002`
+   - Currency: USDC
+   - Explorer: `https://explorer.testnet.arc.io`
 
 ---
 
@@ -128,61 +173,51 @@ forge build
 ```
 Merchant keys in amount
         ↓
-Charge button → QR modal opens instantly
+Charge button → QR / NFC modal opens instantly
         ↓
-Customer scans QR (or NFC tap on Android)
+Customer scans QR or taps phone (NFC)
         ↓
-Customer's wallet opens with merchant address pre-filled
+Customer's wallet opens → selects USDC → confirms
         ↓
-Customer sends USDC directly to merchant wallet
+USDC Transfer event detected onchain
         ↓
-App detects Transfer event onchain (automatic)
+Success overlay fires on merchant screen
         ↓
-Success overlay shown + email receipt sent
+Email receipt sent to customer (if email entered)
         ↓
-Transaction saved to Analytics
+Analytics tab updates within 10 seconds
 ```
 
 ---
 
 ## Fee Structure
 
-| Party | Amount |
+| Amount | Recipient |
 |---|---|
-| Customer pays | Merchant amount + 0.5% |
-| Merchant receives | 100% of keyed amount |
-| Platform fee | 0.5% of gross |
-| Supplier share | Configurable % (default 0%) |
-| Tax reserve | Configurable % |
+| Keyed amount | Merchant net revenue |
+| 0.5% × 0.60 | Platform (hardcoded) |
+| 0.5% × 0.40 | Merchant's chosen fee address (set in Settings) |
+
+The 0.5% fee is **added on top** of the keyed amount. If a merchant charges $10.00, the customer pays $10.05. The merchant receives exactly $10.00.
 
 ---
 
 ## Wallet Compatibility
 
-| Wallet | QR (Address mode) | QR (EIP-681 pre-filled) | NFC |
-|---|---|---|---|
-| MetaMask Mobile | ✅ | ✅ | ✅ Android |
-| Trust Wallet | ✅ | ✅ | ✅ Android |
-| Coinbase Wallet | ✅ | ✅ | ✅ Android |
-| Rabby Mobile | ✅ | ❌ | ✅ Android |
-| Rainbow | ✅ | ✅ | ✅ Android |
-| Bybit | ✅ | ❌ | ✅ Android |
-| Binance | ❌ | ❌ | ❌ |
-
-> Binance's built-in scanner only reads Binance Pay codes and rejects all external URIs.
+| Wallet | Address mode | EIP-681 mode |
+|---|---|---|
+| MetaMask | Yes | Yes |
+| Trust Wallet | Yes | Yes |
+| Coinbase Wallet | Yes | Yes |
+| Rabby | Yes | No |
+| Bybit | Yes | No |
+| Rainbow | Yes | No |
+| OKX Wallet | Yes | No |
 
 ---
 
-## Network
+## Live Links
 
-Built on **Arc Testnet** (chain ID `5042002`). All contracts and flows are production-ready for Arc Mainnet after independent review.
-
-- **USDC address**: `0x3600000000000000000000000000000000000000`
-- **Explorer**: https://explorer.testnet.arc.io
-- **Faucet**: Use the "Get test USDC" button in Arc Studio sidebar
-
----
-
-## License
-
-MIT
+- **App:** https://arc-pay-global.vercel.app
+- **GitHub:** https://github.com/Nationjr/ArcPay-Global
+- **Contract:** https://explorer.testnet.arc.io/address/0x11d55c6730d153ae511c84da12d0418cae384bc5
