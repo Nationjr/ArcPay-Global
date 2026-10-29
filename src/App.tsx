@@ -7,6 +7,7 @@ import { TokenUSDC } from '@web3icons/react'
 import { POSKeypad } from './components/POSKeypad'
 import { SettingsPanel } from './components/SettingsPanel'
 import { AnalyticsTab } from './components/AnalyticsTab'
+import InstallPWA from './components/InstallPWA'
 
 // Contract wiring
 import arcPayArtifact from '../contracts/out/ArcPayCore.sol/ArcPayCore.json'
@@ -121,6 +122,7 @@ export default function App() {
         </nav>
       )}
     </div>
+    <InstallPWA />
     </>
   )
 }

@@ -982,3 +982,26 @@
 {"level":"debug","message":"[vite] connected.","timestamp":1793274620527}
 {"level":"debug","message":"[vite] connected.","timestamp":1793274628721}
 {"level":"debug","message":"[vite] connected.","timestamp":1793274654312}
+{"level":"debug","message":"[vite] connected.","timestamp":1793274686813}
+{"level":"debug","message":"[vite] connected.","timestamp":1793276306975}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793276424739}
+{"level":"debug","message":"[vite] connected.","timestamp":1793276428150}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793276505602}
+{"level":"debug","message":"[vite] connected.","timestamp":1793276507451}
+{"level":"debug","message":"[vite] connected.","timestamp":1793276509069}
+{"level":"debug","message":"[vite] connected.","timestamp":1793276540757}
+{"level":"debug","message":"[vite] connected.","timestamp":1793276542590}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793276544374}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793276544375}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793276544383}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793276544383}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793276544665}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793276544665}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793276550389}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793276550389}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793276550488}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793276550488}
+{"level":"debug","message":"[vite] hot updated: /src/components/InstallPWA.tsx","timestamp":1793276564508}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793276564508}
+{"level":"debug","message":"[vite] hot updated: /src/components/InstallPWA.tsx","timestamp":1793276564522}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793276564522}
