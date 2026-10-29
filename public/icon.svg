@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="#4A90D9"/>
+
+  <!-- Outer circle -->
+  <circle cx="256" cy="200" r="130" fill="none" stroke="white" stroke-width="10"/>
+
+  <!-- USDC arc brackets -->
+  <path d="M 156 140 A 110 110 0 0 0 156 260" fill="none" stroke="white" stroke-width="18" stroke-linecap="round"
+    stroke-dasharray="80 999"/>
+  <path d="M 356 140 A 110 110 0 0 1 356 260" fill="none" stroke="white" stroke-width="18" stroke-linecap="round"
+    stroke-dasharray="80 999"/>
+
+  <!-- Dollar sign circle -->
+  <circle cx="256" cy="200" r="60" fill="none" stroke="white" stroke-width="10"/>
+
+  <!-- Dollar sign $ -->
+  <text x="256" y="224" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white">$</text>
+
+  <!-- ArcPay Global text -->
+  <text x="256" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" font-weight="400" fill="white">ArcPay Global</text>
+</svg>
