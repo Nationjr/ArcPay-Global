@@ -1,19 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- Background -->
-  <rect width="512" height="512" rx="100" fill="#4A90D9"/>
+  <rect width="512" height="512" rx="80" fill="#4A90D9"/>
 
-  <!-- Outer ring -->
-  <circle cx="256" cy="256" r="180" fill="none" stroke="white" stroke-width="18"/>
+  <!-- Outer circle -->
+  <circle cx="256" cy="210" r="145" fill="none" stroke="white" stroke-width="12"/>
 
   <!-- Left arc bracket -->
-  <path d="M 116 170 A 155 155 0 0 0 116 342" fill="none" stroke="white" stroke-width="22" stroke-linecap="round" stroke-dasharray="100 999"/>
+  <path d="M 148 135 A 120 120 0 0 0 148 285" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" stroke-dasharray="90 999"/>
 
   <!-- Right arc bracket -->
-  <path d="M 396 170 A 155 155 0 0 1 396 342" fill="none" stroke="white" stroke-width="22" stroke-linecap="round" stroke-dasharray="100 999"/>
+  <path d="M 364 135 A 120 120 0 0 1 364 285" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" stroke-dasharray="90 999"/>
 
-  <!-- Dollar sign — large and bold -->
-  <text x="256" y="316" text-anchor="middle"
-    font-family="Arial Black, Arial, sans-serif"
-    font-size="220" font-weight="900"
+  <!-- Inner circle -->
+  <circle cx="256" cy="210" r="72" fill="none" stroke="white" stroke-width="12"/>
+
+  <!-- Dollar sign -->
+  <text x="256" y="252" text-anchor="middle"
+    font-family="Arial, sans-serif"
+    font-size="88" font-weight="700"
     fill="white">$</text>
+
+  <!-- ArcPay Global text -->
+  <text x="256" y="420" text-anchor="middle"
+    font-family="Arial, sans-serif"
+    font-size="52" font-weight="400"
+    fill="white">ArcPay Global</text>
 </svg>
