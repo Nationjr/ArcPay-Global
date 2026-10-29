@@ -64,11 +64,11 @@ export default function App() {
     <div className="min-h-dvh flex flex-col" style={{ background: 'var(--bg-gradient)' }}>
       {/* Header */}
       <header className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between" style={{ background: 'var(--surface-strong)', borderBottom: '1px solid var(--border)', backdropFilter: 'blur(12px)' }}>
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-            <TokenUSDC variant="mono" size={16} className="brightness-[100]" style={{ filter: 'invert(1)' }} />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ background: 'var(--accent)' }}>
+            <TokenUSDC variant="mono" size={24} className="brightness-[100]" style={{ filter: 'invert(1)' }} />
           </div>
-          <span className="display font-bold text-sm tracking-tight" style={{ color: 'var(--ink)' }}>ArcPay Global POS</span>
+          <span className="font-extrabold text-base tracking-tight" style={{ color: 'var(--ink)', fontSize: '1.05rem' }}>ArcPay Global POS</span>
         </div>
         <ConnectKitButton />
       </header>
