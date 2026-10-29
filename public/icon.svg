@@ -1,28 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Background -->
-  <rect width="512" height="512" rx="80" fill="#4A90D9"/>
+  <!-- Blue background -->
+  <rect width="512" height="512" rx="90" fill="#4A8FD4"/>
 
-  <!-- Outer circle -->
-  <circle cx="256" cy="210" r="145" fill="none" stroke="white" stroke-width="12"/>
+  <!-- Outer circle of USDC logo -->
+  <circle cx="256" cy="200" r="148" fill="none" stroke="white" stroke-width="14"/>
 
-  <!-- Left arc bracket -->
-  <path d="M 148 135 A 120 120 0 0 0 148 285" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" stroke-dasharray="90 999"/>
+  <!-- Left bracket arc of USDC -->
+  <path d="M 152 122 A 120 120 0 0 0 152 278"
+    fill="none" stroke="white" stroke-width="22"
+    stroke-linecap="round" stroke-dasharray="104 9999"/>
 
-  <!-- Right arc bracket -->
-  <path d="M 364 135 A 120 120 0 0 1 364 285" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" stroke-dasharray="90 999"/>
+  <!-- Right bracket arc of USDC -->
+  <path d="M 360 122 A 120 120 0 0 1 360 278"
+    fill="none" stroke="white" stroke-width="22"
+    stroke-linecap="round" stroke-dasharray="104 9999"/>
 
   <!-- Inner circle -->
-  <circle cx="256" cy="210" r="72" fill="none" stroke="white" stroke-width="12"/>
+  <circle cx="256" cy="200" r="76" fill="none" stroke="white" stroke-width="14"/>
 
   <!-- Dollar sign -->
-  <text x="256" y="252" text-anchor="middle"
-    font-family="Arial, sans-serif"
-    font-size="88" font-weight="700"
+  <text x="258" y="248"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="96" font-weight="bold"
     fill="white">$</text>
 
   <!-- ArcPay Global text -->
-  <text x="256" y="420" text-anchor="middle"
-    font-family="Arial, sans-serif"
-    font-size="52" font-weight="400"
+  <text x="256" y="430"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="54" font-weight="300"
+    letter-spacing="1"
     fill="white">ArcPay Global</text>
 </svg>
