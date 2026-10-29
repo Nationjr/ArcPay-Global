@@ -33,6 +33,14 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
+          // Unregister any old service workers before registering the new one
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(reg => {
+              if (!reg.active || !reg.active.scriptURL.includes('sw.js')) {
+                reg.unregister()
+              }
+            })
+          })
           navigator.serviceWorker.register('/sw.js')
         })
       }

@@ -1,4 +1,4 @@
-const CACHE = 'arcpay-v1'
+const CACHE = 'arcpay-v3'
 const PRECACHE = ['/', '/index.html', '/icon.svg', '/manifest.json']
 
 self.addEventListener('install', e => {
