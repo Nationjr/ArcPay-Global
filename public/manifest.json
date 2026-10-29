@@ -1,6 +1,6 @@
 {
   "name": "ArcPay Global POS",
-  "short_name": "ArcPay",
+  "short_name": "ArcPay Global",
   "description": "Accept USDC payments instantly via QR code or NFC tap. No card terminal required.",
   "start_url": "/",
   "display": "standalone",
