@@ -19,6 +19,7 @@
         "connectkit": "^1.9.2",
         "framer-motion": "^11.15.0",
         "lucide-react": "^0.468.0",
+        "nodemailer": "^10.3.0",
         "qrcode": "^1.5.4",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
@@ -30,6 +31,7 @@
       },
       "devDependencies": {
         "@types/node": "^24.0.0",
+        "@types/nodemailer": "^8.0.2",
         "@types/qrcode": "^1.5.6",
         "@types/react": "^18.3.12",
         "@types/react-dom": "^18.3.1",
@@ -699,6 +701,8 @@
 
     "@types/node": ["@types/node@24.19.2", "", { "dependencies": { "undici-types": ">=7.24.0 <7.24.7" } }, "sha512-93d49wCWJkCyN87MxLpNN6KXPCwFw7bVUg79mGUV1OS40JGWwVCr8n61DXCSqz7CV6/VfPkb7xec7uP2M+QHWQ=="],
 
+    "@types/nodemailer": ["@types/nodemailer@8.0.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-c7M5ox8p0nEOfbJ2E9Qcmt8/QCu/VzsiAhzBiZbvky2PhKZDHpKB3sQHBM5MEZNkCfBOaS6S9//AGPRTNB7IaA=="],
+
     "@types/prop-types": ["@types/prop-types@15.7.15", "", {}, "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw=="],
 
     "@types/qrcode": ["@types/qrcode@1.5.6", "", { "dependencies": { "@types/node": "*" } }, "sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw=="],
@@ -1326,6 +1330,8 @@
     "node-releases": ["node-releases@2.0.58", "", {}, "sha512-BdiKAgbfRlvfMq/XzO/AF9NPmaA8a+YpLAyAFTVFBj3gARrAIfWvNq7Q7NE4se3KgFu0KkrvQMxTS0XVnsGzHg=="],
 
     "node-stdlib-browser": ["node-stdlib-browser@1.3.1", "", { "dependencies": { "assert": "^2.0.0", "browser-resolve": "^2.0.0", "browserify-zlib": "^0.2.0", "buffer": "^5.7.1", "console-browserify": "^1.1.0", "constants-browserify": "^1.0.0", "create-require": "^1.1.1", "crypto-browserify": "^3.12.1", "domain-browser": "4.22.0", "events": "^3.0.0", "https-browserify": "^1.0.0", "isomorphic-timers-promises": "^1.0.1", "os-browserify": "^0.3.0", "path-browserify": "^1.0.1", "pkg-dir": "^5.0.0", "process": "^0.11.10", "punycode": "^1.4.1", "querystring-es3": "^0.2.1", "readable-stream": "^3.6.0", "stream-browserify": "^3.0.0", "stream-http": "^3.2.0", "string_decoder": "^1.0.0", "timers-browserify": "^2.0.4", "tty-browserify": "0.0.1", "url": "^0.11.4", "util": "^0.12.4", "vm-browserify": "^1.0.1" } }, "sha512-X75ZN8DCLftGM5iKwoYLA3rjnrAEs97MkzvSd4q2746Tgpg8b8XWiBGiBG4ZpgcAqBgtgPHTiAc8ZMCvZuikDw=="],
+
+    "nodemailer": ["nodemailer@10.3.0", "", {}, "sha512-LsqM+Sxjap8BMgxQuVvABoEcm9ed2f3h2e0ohB7kV3sl9+4IaXlxC0DT8CQelg/S0he38gT4yT0RH1pvZxHf+A=="],
 
     "normalize-path": ["normalize-path@3.0.0", "", {}, "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="],
 

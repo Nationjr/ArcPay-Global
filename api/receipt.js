@@ -1,3 +1,15 @@
+import nodemailer from 'nodemailer'
+
+function getTransporter() {
+  const user = process.env.GMAIL_USER
+  const pass = process.env.GMAIL_APP_PASSWORD
+  if (!user || !pass) throw new Error('Email service not configured')
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass },
+  })
+}
+
 // In-memory rate limiter — 5 requests per IP per minute
 const rateLimitMap = new Map()
 
@@ -65,7 +77,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — try again in a minute' })
   }
 
-  if (!process.env.RESEND_API_KEY) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     return res.status(500).json({ error: 'Email service not configured' })
   }
 
@@ -94,21 +106,13 @@ export default async function handler(req, res) {
   const timestamp = typeof body.timestamp === 'number' ? body.timestamp : Date.now()
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'ArcPay Global POS <onboarding@resend.dev>',
-        to: [email],
-        subject: `Receipt — $${amount.toFixed(2)} USDC payment confirmed`,
-        html: buildHtml({ email, invoiceId, txHash, amount, fee, net, timestamp, explorerBase }),
-      }),
+    const transporter = getTransporter()
+    await transporter.sendMail({
+      from: `ArcPay Global POS <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: `Receipt — $${amount.toFixed(2)} USDC payment confirmed`,
+      html: buildHtml({ email, invoiceId, txHash, amount, fee, net, timestamp, explorerBase }),
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message ?? 'Resend error')
     res.status(200).json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message ?? 'Unknown error' })
