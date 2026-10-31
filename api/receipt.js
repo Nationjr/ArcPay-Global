@@ -101,7 +101,7 @@ export default async function handler(req, res) {
 
   const email = sanitize(body.email, 254)
   const txHash = sanitize(body.txHash ?? '', 66)
-  const explorerBase = sanitize(body.explorerBase ?? 'https://explorer.testnet.arc.io', 100)
+  const explorerBase = sanitize(body.explorerBase ?? 'https://explorer.arc.io', 100)
   const invoiceId = sanitize(body.invoiceId ?? '', 66)
   const timestamp = typeof body.timestamp === 'number' ? body.timestamp : Date.now()
 

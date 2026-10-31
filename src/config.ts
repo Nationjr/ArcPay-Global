@@ -5,37 +5,48 @@
 
 import { http, fallback, createConfig } from 'wagmi'
 import { mainnet } from 'wagmi/chains'
-import { arcTestnet } from 'viem/chains'
+import { defineChain } from 'viem'
 import { createPublicClient, http as viemHttp } from 'viem'
 import { injected } from 'wagmi/connectors'
 import { registerChain as registerTraceChain } from './tracing'
 
-// Arc Testnet RPC fallback chain — tried in order, each with a 10 s timeout.
-const ARC_TESTNET_RPCS = [
-  'https://rpc.solidrpc.io/public/evm/5042002',
-  'https://arc-testnet.drpc.org',
-  'https://5042002.rpc.thirdweb.com',
-  'https://rpc.testnet.arc.network',
+// Arc Mainnet chain definition
+export const arcMainnet = defineChain({
+  id: 5042,
+  name: 'Arc',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.mainnet.arc.io'] },
+  },
+  blockExplorers: {
+    default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' },
+  },
+})
+
+// Arc Mainnet RPC fallback transport
+const ARC_MAINNET_RPCS = [
+  'https://rpc.mainnet.arc.io',
 ] as const
 
-const arcTestnetTransport = fallback(
-  ARC_TESTNET_RPCS.map(url => http(url, { timeout: 10_000 })),
+const arcMainnetTransport = fallback(
+  ARC_MAINNET_RPCS.map(url => http(url, { timeout: 10_000 })),
   { retryCount: 3, retryDelay: 1_000 },
 )
 
 // Pre-register primary RPC so trace events show the correct chain name immediately
-registerTraceChain(arcTestnet.id, ARC_TESTNET_RPCS[0])
+registerTraceChain(arcMainnet.id, ARC_MAINNET_RPCS[0])
 
 export const config = createConfig({
-  chains: [arcTestnet, mainnet], // mainnet needed for ENS resolution
+  chains: [arcMainnet, mainnet], // mainnet needed for ENS resolution
   connectors: [injected()],
   transports: {
-    [arcTestnet.id]: arcTestnetTransport,
+    [arcMainnet.id]: arcMainnetTransport,
     [mainnet.id]: http(), // ENS resolution uses mainnet
   },
 })
 
 // Standalone viem public client — use this for one-off reads outside of wagmi hooks.
 export const arcPublicClient = createPublicClient({
-  transport: viemHttp('https://rpc.testnet.arc.io', { timeout: 10_000 }),
+  chain: arcMainnet,
+  transport: viemHttp('https://rpc.mainnet.arc.io', { timeout: 10_000 }),
 })
