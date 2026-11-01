@@ -11,7 +11,7 @@ import InstallPWA from './components/InstallPWA'
 
 // Contract wiring — replace with mainnet contract address after deployment
 import arcPayArtifact from '../contracts/out/ArcPayCore.sol/ArcPayCore.json'
-const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}` // TODO: replace with Arc mainnet address
+const CONTRACT_ADDRESS = '0x2A96Bbc34495Ec856747e6B49b7eD267F68425cC' as `0x${string}` // TODO: replace with Arc mainnet address
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CONTRACT_ABI = arcPayArtifact.abi as any[]
 
