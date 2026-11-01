@@ -7,8 +7,8 @@ import { getUsdc } from '@/onchain-facts'
 import { toast } from 'sonner'
 import QRCode from 'qrcode'
 
-const ARC_TESTNET_CHAIN_ID = 5042002
-const ARC_EXPLORER_BASE = 'https://explorer.testnet.arc.io'
+const ARC_CHAIN_ID = 5042
+const ARC_EXPLORER_BASE = 'https://explorer.arc.io'
 
 function buildEip681Uri(usdcAddress: string, recipient: string, amountRaw: bigint, chainId: number): string {
   return `ethereum:${usdcAddress}@${chainId}/transfer?address=${recipient}&uint256=${amountRaw.toString()}`
@@ -44,12 +44,12 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
   const nfcSupported = typeof window !== 'undefined' && 'NDEFReader' in window
 
   const totalAmount = amount * (1 + tipPct / 100)
-  const usdc = getUsdc(ARC_TESTNET_CHAIN_ID)
+  const usdc = getUsdc(ARC_CHAIN_ID)
   const amountRaw = parseUnits(totalAmount.toFixed(6), 6)
 
   // QR encodes the merchant wallet address directly — customer sends USDC peer-to-peer
   const eip681Uri = usdc
-    ? buildEip681Uri(usdc.address, merchant, amountRaw, ARC_TESTNET_CHAIN_ID)
+    ? buildEip681Uri(usdc.address, merchant, amountRaw, ARC_CHAIN_ID)
     : ''
   const paymentUri = qrMode === 'address' ? merchant : eip681Uri
 
@@ -58,7 +58,7 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
     address: usdc?.address as `0x${string}` | undefined,
     abi: erc20Abi,
     eventName: 'Transfer',
-    chainId: ARC_TESTNET_CHAIN_ID,
+    chainId: ARC_CHAIN_ID,
     enabled: !!usdc && !detected,
     onLogs(logs) {
       for (const log of logs) {
