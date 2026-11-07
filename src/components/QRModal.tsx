@@ -119,11 +119,56 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
   // Render QR code
   useEffect(() => {
     if (!canvasRef.current || !paymentUri) return
-    void QRCode.toCanvas(canvasRef.current, paymentUri, {
+    const canvas = canvasRef.current
+    // High error correction so the centre logo never blocks a scan
+    void QRCode.toCanvas(canvas, paymentUri, {
       width: 220,
       margin: 2,
       color: { dark: '#122d45', light: '#ffffff' },
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: 'H',
+    }).then(() => {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      const size = canvas.width
+      const cx = size / 2
+      const cy = size / 2
+      const badge = size * 0.2        // logo diameter, kept small for reliable scanning
+      const pad = size * 0.03
+
+      // White backing so the modules behind the logo are cleanly cut out
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(cx, cy, badge / 2 + pad, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Blue disc with white ring (ArcPay / USDC mark)
+      ctx.fillStyle = '#3d7cc9'
+      ctx.beginPath()
+      ctx.arc(cx, cy, badge / 2, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = size * 0.012
+      ctx.beginPath()
+      ctx.arc(cx, cy, badge / 2 - size * 0.012, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // USDC side arcs
+      ctx.lineWidth = size * 0.014
+      ctx.lineCap = 'round'
+      const r = badge * 0.34
+      ctx.beginPath()
+      ctx.arc(cx, cy, r, Math.PI * 0.72, Math.PI * 1.28)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(cx, cy, r, -Math.PI * 0.28, Math.PI * 0.28)
+      ctx.stroke()
+
+      // Dollar sign
+      ctx.fillStyle = '#ffffff'
+      ctx.font = `700 ${badge * 0.46}px system-ui, sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('$', cx, cy + badge * 0.02)
     })
   }, [paymentUri])
 
