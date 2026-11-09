@@ -8,7 +8,7 @@ import { QRModal } from './QRModal'
 import { TxRecords } from '../utils/txRecords'
 import { useFxRates } from '../hooks/useFxRates'
 
-const ARC_TESTNET_CHAIN_ID = 5042002
+const ARC_CHAIN_ID = 5042
 
 interface Props {
   contractAddress: `0x${string}` | null
@@ -32,7 +32,7 @@ export function POSKeypad({ contractAddress: _contractAddress, contractAbi: _con
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const pendingTxRef = useRef<{ amount: number; fee: number; net: number; tax: number } | null>(null)
 
-  const usdc = getUsdc(ARC_TESTNET_CHAIN_ID)
+  const usdc = getUsdc(ARC_CHAIN_ID)
 
   const { writeContract: _writeContract, data: writeHash, isPending: _isPending } = useWriteContract()
   void _writeContract; void _isPending
@@ -237,7 +237,7 @@ export function POSKeypad({ contractAddress: _contractAddress, contractAbi: _con
           amount={usdcAmount}
           merchant={address}
           onClose={() => setShowQR(false)}
-          onSuccess={(txHash?: string) => {
+          onSuccess={(txHash?: string, customer?: string) => {
             setShowQR(false)
             setShowSuccess(true)
             const _pf = usdcAmount * 0.005 / 1.005
@@ -251,6 +251,7 @@ export function POSKeypad({ contractAddress: _contractAddress, contractAbi: _con
               net: usdcAmount - _pf - _ss - _ts,
               tax: _ts,
               timestamp: Date.now(),
+              customer,
             })
           }}
         />
@@ -272,7 +273,7 @@ export function POSKeypad({ contractAddress: _contractAddress, contractAbi: _con
             <div className="display text-3xl font-bold text-white mt-6">Payment Received</div>
             <div className="text-white/80 text-sm mt-2">Sub-second Arc finality</div>
             {writeHash && (
-              <a href={buildTxExplorerUrl(ARC_TESTNET_CHAIN_ID, writeHash)} target="_blank" rel="noopener noreferrer"
+              <a href={buildTxExplorerUrl(ARC_CHAIN_ID, writeHash)} target="_blank" rel="noopener noreferrer"
                 className="mt-4 text-white/60 text-xs underline">View on explorer</a>
             )}
             <button

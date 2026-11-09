@@ -19,7 +19,7 @@ interface Props {
   amount: number           // gross USDC float (merchant amount + fee)
   merchant: `0x${string}`
   onClose: () => void
-  onSuccess: (txHash?: string) => void
+  onSuccess: (txHash?: string, customer?: string) => void
 }
 
 type QrMode = 'address' | 'eip681'
@@ -62,7 +62,7 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
     enabled: !!usdc && !detected,
     onLogs(logs) {
       for (const log of logs) {
-        const { args } = log as { args?: { to?: string; value?: bigint } }
+        const { args } = log as { args?: { from?: string; to?: string; value?: bigint } }
         if (!args) continue
         const toAddr = (args.to ?? '').toLowerCase()
         if (toAddr !== merchant.toLowerCase()) continue
@@ -81,7 +81,8 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
         setDetected(true)  // eslint-disable-line react/set-state-in-effect
         toast.success('Payment detected!')
         // Send receipt then fire success — modal must stay mounted until receipt is dispatched
-        void sendReceiptRef.current(txHash).then(() => onSuccess(txHash))
+        const customer = args.from
+        void sendReceiptRef.current(txHash).then(() => onSuccess(txHash, customer))
       }
     },
   })

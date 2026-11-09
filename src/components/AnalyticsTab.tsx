@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Download, TrendingUp, DollarSign, FileText, BarChart2, ExternalLink } from 'lucide-react'
+import { Download, TrendingUp, DollarSign, FileText, BarChart2, ExternalLink, RotateCcw } from 'lucide-react'
+import { RefundDialog } from './RefundDialog'
 import { useAccount, useReadContract } from 'wagmi'
 import { Amount } from '@/onchain-money'
 import { OfflineQueue } from '../utils/offlineQueue'
@@ -11,11 +12,13 @@ const ARC_TESTNET_CHAIN_ID = 5042002
 interface Props {
   contractAddress: `0x${string}` | null
   contractAbi: readonly unknown[]
+  merchantFeeRecipient?: string
 }
 
-export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
+export function AnalyticsTab({ contractAddress, contractAbi, merchantFeeRecipient = '' }: Props) {
   const { address } = useAccount()
   const [todayDateStr] = useState(() => new Date().toDateString())
+  const [refundTarget, setRefundTarget] = useState<TxRecord | null>(null)
   // Re-read from localStorage on every mount so new transactions appear immediately
   const [records, setRecords] = useState<TxRecord[]>([])
 
@@ -75,14 +78,18 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
 
   const todayRecords = records.filter(r => new Date(r.timestamp).toDateString() === todayDateStr) // eslint-disable-line react/purity
 
-  const dailyTotal = todayRecords.reduce((s, r) => s + r.amount, 0)
+  // Refunded sales no longer count towards what was processed or earned
+  const keptToday = todayRecords.filter(r => !r.refund?.completedAt)
+  const dailyTotal = keptToday.reduce((s, r) => s + r.amount, 0)
   const dailyFees = todayRecords.reduce((s, r) => s + r.fee, 0)
-  const dailyNet = todayRecords.reduce((s, r) => s + r.net, 0)
+  const dailyNet = keptToday.reduce((s, r) => s + r.net, 0)
+
+  const reloadRecords = () => setRecords(TxRecords.getAll())
 
   const exportCSV = () => {
     const rows = [
-      ['Invoice ID', 'Tx Hash', 'Amount USDC', 'Platform Fee', 'Net Revenue', 'Tax Reserve', 'Timestamp'],
-      ...records.map(r => [r.invoiceId, r.txHash ?? '', r.amount.toFixed(6), r.fee.toFixed(6), r.net.toFixed(6), r.tax.toFixed(6), new Date(r.timestamp).toISOString()]),
+      ['Invoice ID', 'Tx Hash', 'Amount USDC', 'Platform Fee', 'Net Revenue', 'Tax Reserve', 'Timestamp', 'Customer', 'Refund Tx'],
+      ...records.map(r => [r.invoiceId, r.txHash ?? '', r.amount.toFixed(6), r.fee.toFixed(6), r.net.toFixed(6), r.tax.toFixed(6), new Date(r.timestamp).toISOString(), r.customer ?? '', r.refund?.customerTx ?? '']),
     ]
     const csv = rows.map(r => r.join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -182,6 +189,19 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
                   <div className="text-xs mt-0.5 tabular-nums" style={{ color: 'var(--muted)' }}>
                     Fee ${r.fee.toFixed(4)} · Net ${r.net.toFixed(2)}
                   </div>
+                  {r.refund?.completedAt ? (
+                    <span className="inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(192,57,43,0.1)', color: '#c0392b' }}>
+                      Refunded
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setRefundTarget(r)}
+                      className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors"
+                      style={{ border: '1px solid var(--border)', color: r.refund?.customerTx ? '#c0392b' : 'var(--ink)', background: 'var(--surface-muted)' }}
+                    >
+                      <RotateCcw size={10} /> {r.refund?.customerTx ? 'Finish refund' : 'Refund'}
+                    </button>
+                  )}
                 </div>
                 <div className="text-xs tabular-nums flex-shrink-0 text-right" style={{ color: 'var(--subtle)' }}>
                   {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -201,6 +221,15 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
       >
         <Download size={16} /> Export CSV for Tax Accounting
       </button>
+
+      {refundTarget && (
+        <RefundDialog
+          record={refundTarget}
+          merchantFeeRecipient={merchantFeeRecipient}
+          onClose={() => setRefundTarget(null)}
+          onChanged={reloadRecords}
+        />
+      )}
     </div>
   )
 }

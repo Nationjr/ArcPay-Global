@@ -93,7 +93,7 @@ export default function App() {
             </motion.div>
           ) : (
             <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <AnalyticsTab contractAddress={CONTRACT_ADDRESS} contractAbi={CONTRACT_ABI} />
+              <AnalyticsTab contractAddress={CONTRACT_ADDRESS} contractAbi={CONTRACT_ABI} merchantFeeRecipient={settings.merchantFeeRecipient} />
             </motion.div>
           )}
         </AnimatePresence>
