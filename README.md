@@ -18,7 +18,7 @@ Every transaction deducts a 0.5% platform fee added on top of the merchant's key
 
 - **Instant QR checkout** — tap Charge, QR appears, customer pays from any wallet
 - **NFC tap payments** — Android Chrome only; merchant arms the NFC radio, customer taps their phone
-- **Live FX conversion** — real-time exchange rates refreshed every 60 seconds, with live/stale/offline indicator
+- **FX conversion** — USD, EUR, GBP, NGN and ARS, converted at market rates checked every 60 seconds, with live/stale/offline indicator
 - **Auto-detection** — Transfer event watcher fires the success overlay the moment payment lands onchain
 - **Email receipts** — HTML receipt with Arc Explorer transaction link sent via Resend
 - **Analytics dashboard** — total volume, net revenue, tax reserve, platform fees, and transaction history with CSV export

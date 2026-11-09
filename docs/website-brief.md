@@ -72,7 +72,7 @@ Suggested fonts: Montserrat (headings), Inter (body).
 | Instant QR checkout | The QR appears the moment you tap Charge. |
 | NFC tap payments | Android merchants can accept by phone tap (Chrome on Android). |
 | Any wallet | Customers pay from MetaMask, Trust Wallet, Rabby, Coinbase Wallet, OKX, Rainbow and more. |
-| Live currency conversion | Key in USD, GBP, EUR, NGN, KES, GHS, ZAR and more. Rates refresh every 60 seconds, with a clear live/stale/offline indicator. |
+| Currency conversion | Key in USD, EUR, GBP, NGN or ARS. Market rates are checked every 60 seconds (the rate source updates daily), with a clear live/stale/offline indicator. |
 | Automatic payment detection | No refreshing or manual checks. The success screen appears when the payment lands. |
 | Email receipts | A clean HTML receipt with amount, fee breakdown, time and an explorer link. |
 | Analytics | Volume, net revenue, tax reserve, fees and full history, with CSV export. |
@@ -104,7 +104,7 @@ Suggested fonts: Montserrat (headings), Inter (body).
 ### FAQ
 **Do my customers need an app?** No. Any wallet that holds USDC on Arc works.
 **What does it cost?** 0.5% added to each charge, paid by the customer. Merchants receive the full amount they key in.
-**Which currencies can I key in?** USD, GBP, EUR, NGN, KES, GHS, ZAR and 150+ more, converted to USDC at live rates.
+**Which currencies can I key in?** USD, EUR, GBP, NGN and ARS today, converted to USDC at current market rates. More currencies are planned.
 **Does it work on iPhone?** Yes, in Safari (add to Home Screen). NFC tap is Android Chrome only.
 **Do customers get a receipt?** Yes, by email, if the merchant enters their address before charging.
 **Is it live?** Yes, on Arc mainnet.
