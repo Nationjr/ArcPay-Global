@@ -12,10 +12,9 @@ const ARC_TESTNET_CHAIN_ID = 5042002
 interface Props {
   contractAddress: `0x${string}` | null
   contractAbi: readonly unknown[]
-  merchantFeeRecipient?: string
 }
 
-export function AnalyticsTab({ contractAddress, contractAbi, merchantFeeRecipient = '' }: Props) {
+export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
   const { address } = useAccount()
   const [todayDateStr] = useState(() => new Date().toDateString())
   const [refundTarget, setRefundTarget] = useState<TxRecord | null>(null)
@@ -197,9 +196,9 @@ export function AnalyticsTab({ contractAddress, contractAbi, merchantFeeRecipien
                     <button
                       onClick={() => setRefundTarget(r)}
                       className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors"
-                      style={{ border: '1px solid var(--border)', color: r.refund?.customerTx ? '#c0392b' : 'var(--ink)', background: 'var(--surface-muted)' }}
+                      style={{ border: '1px solid var(--border)', color: 'var(--ink)', background: 'var(--surface-muted)' }}
                     >
-                      <RotateCcw size={10} /> {r.refund?.customerTx ? 'Finish refund' : 'Refund'}
+                      <RotateCcw size={10} /> Refund
                     </button>
                   )}
                 </div>
@@ -225,7 +224,6 @@ export function AnalyticsTab({ contractAddress, contractAbi, merchantFeeRecipien
       {refundTarget && (
         <RefundDialog
           record={refundTarget}
-          merchantFeeRecipient={merchantFeeRecipient}
           onClose={() => setRefundTarget(null)}
           onChanged={reloadRecords}
         />

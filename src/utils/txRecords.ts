@@ -1,11 +1,8 @@
 const STORAGE_KEY = 'arcpay_records'
 
-/** Progress of a refund. Each field holds the hash of a completed transfer, so a
- *  refund that is interrupted part-way can be resumed without paying anyone twice. */
+/** A refund: one full-amount transfer back to the customer, with no fee. */
 export interface RefundState {
-  customerTx?: string       // refund sent to the customer
-  platformTx?: string       // 60% of the withheld fee, sent to the platform
-  feeRecipientTx?: string   // 40% of the withheld fee, sent to the merchant fee address
+  customerTx?: string       // hash of the refund transfer
   completedAt?: number
 }
 
