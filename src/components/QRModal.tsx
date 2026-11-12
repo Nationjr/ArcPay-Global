@@ -19,7 +19,7 @@ interface Props {
   amount: number           // gross USDC float (merchant amount + fee)
   merchant: `0x${string}`
   onClose: () => void
-  onSuccess: (txHash?: string, customer?: string) => void
+  onSuccess: (txHash?: string, customer?: string, email?: string) => void
 }
 
 type QrMode = 'address' | 'eip681'
@@ -39,6 +39,7 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const detectedRef = useRef(false)
   const sendReceiptRef = useRef<(txHash?: string) => Promise<void>>(async () => {})
+  const emailRef = useRef('')
 
   // Check if Web NFC is available (Chrome on Android only)
   const nfcSupported = typeof window !== 'undefined' && 'NDEFReader' in window
@@ -82,7 +83,7 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
         toast.success('Payment detected!')
         // Send receipt then fire success — modal must stay mounted until receipt is dispatched
         const customer = args.from
-        void sendReceiptRef.current(txHash).then(() => onSuccess(txHash, customer))
+        void sendReceiptRef.current(txHash).then(() => onSuccess(txHash, customer, emailRef.current || undefined))
       }
     },
   })
@@ -116,6 +117,10 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
 
   // Keep ref in sync so the stale onLogs closure always sees the latest sendReceipt
   useEffect(() => { sendReceiptRef.current = sendReceipt }, [sendReceipt])
+  useEffect(() => {
+    const e = receiptEmail.trim()
+    emailRef.current = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) ? e : ''
+  }, [receiptEmail])
 
   // Render QR code
   useEffect(() => {
@@ -182,7 +187,7 @@ export function QRModal({ invoiceId: _invoiceId, amount, merchant, onClose, onSu
 
   const handleManualPaid = () => {
     void sendReceiptRef.current(undefined).then(() => {
-      onSuccess(undefined)
+      onSuccess(undefined, undefined, emailRef.current || undefined)
       onClose()
     })
   }

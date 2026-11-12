@@ -237,7 +237,7 @@ export function POSKeypad({ contractAddress: _contractAddress, contractAbi: _con
           amount={usdcAmount}
           merchant={address}
           onClose={() => setShowQR(false)}
-          onSuccess={(txHash?: string, customer?: string) => {
+          onSuccess={(txHash?: string, customer?: string, email?: string) => {
             setShowQR(false)
             setShowSuccess(true)
             const _pf = usdcAmount * 0.005 / 1.005
@@ -252,6 +252,7 @@ export function POSKeypad({ contractAddress: _contractAddress, contractAbi: _con
               tax: _ts,
               timestamp: Date.now(),
               customer,
+              email,
             })
           }}
         />

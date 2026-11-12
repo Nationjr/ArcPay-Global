@@ -17,7 +17,8 @@ Built with [Arc Studio](https://studio.arc.io)
 - The app watches the chain, detects the incoming USDC transfer and shows a "Payment Received" screen.
 - Optionally enter the customer's email before charging to send an HTML **receipt** with an explorer link.
 - **Analytics** tab: today's totals, transaction history, CSV export, and contract stat cards.
-- **Refund** button on every sale: sends back everything the customer paid, with no fee, in one wallet confirmation after a small "Are you sure?" window.
+- **Refunds** on every sale: refund the full amount or just part of it (for example one returned item), with no fee and one wallet confirmation after a small "Are you sure?" window. Each sale shows the amount already refunded and what can still be refunded, and a refund that is waiting for confirmation is counted so it cannot be sent twice.
+- **Refund receipt email**: after a refund, the customer can be emailed a receipt with the amount, the items or reason the merchant typed, the original payment and the balance left.
 - **Settings**: tax percentage, supplier address and share, and a fee recipient address.
 - Installable as a **PWA** on a phone home screen.
 
@@ -34,7 +35,7 @@ The `ArcPayCore` contract can split that fee 60% to the platform and 40% to a fe
 
 - Sales history and Settings are saved in the browser on each device. They are not synced between devices and are lost if site data is cleared.
 - The Analytics stat cards (Total Volume, Net Revenue, Tax Reserve, Platform Fees) read the contract, so they do not change for QR payments.
-- NFC tap needs Android with Chrome. Binance and Bybit in-app scanners do not read the QR.
+- NFC tap needs Android with Chrome. Binance's in-app scanner does not read the QR. Some wallets (for example Rabby and Bybit) cannot read the Pre-filled QR, so use Address mode for them.
 - Email receipts are only sent when the merchant enters an address before charging.
 - The contract has had internal security reviews but no independent third-party audit.
 
@@ -91,7 +92,7 @@ src/
     POSKeypad.tsx         Keypad, currency picker, charge button
     QRModal.tsx           Checkout QR, NFC, payment detection, receipts
     AnalyticsTab.tsx      Stats, history, CSV export, refund button
-    RefundDialog.tsx      Small confirm window and refund transfer
+    RefundDialog.tsx      Small confirm window, partial refunds, refund receipt
     SettingsPanel.tsx     Tax, supplier and fee recipient settings
     SplashScreen.tsx      Animated launch screen
     InstallPWA.tsx        Install prompt

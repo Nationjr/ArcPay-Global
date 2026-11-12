@@ -4,7 +4,7 @@ import { RefundDialog } from './RefundDialog'
 import { useAccount, useReadContract } from 'wagmi'
 import { Amount } from '@/onchain-money'
 import { OfflineQueue } from '../utils/offlineQueue'
-import { TxRecords, type TxRecord } from '../utils/txRecords'
+import { TxRecords, getRefunds, refundSummary, type TxRecord } from '../utils/txRecords'
 import { buildTxExplorerUrl } from '@/onchain-facts'
 
 const ARC_TESTNET_CHAIN_ID = 5042002
@@ -77,18 +77,21 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
 
   const todayRecords = records.filter(r => new Date(r.timestamp).toDateString() === todayDateStr) // eslint-disable-line react/purity
 
-  // Refunded sales no longer count towards what was processed or earned
-  const keptToday = todayRecords.filter(r => !r.refund?.completedAt)
-  const dailyTotal = keptToday.reduce((s, r) => s + r.amount, 0)
+  // Refunded money no longer counts towards what was processed or earned
+  const keepFactor = (r: TxRecord) => {
+    const sm = refundSummary(r)
+    return r.amount > 0 ? Math.max(0, sm.paid - sm.refunded) / r.amount : 1
+  }
+  const dailyTotal = todayRecords.reduce((s, r) => s + r.amount * keepFactor(r), 0)
   const dailyFees = todayRecords.reduce((s, r) => s + r.fee, 0)
-  const dailyNet = keptToday.reduce((s, r) => s + r.net, 0)
+  const dailyNet = todayRecords.reduce((s, r) => s + r.net * keepFactor(r), 0)
 
   const reloadRecords = () => setRecords(TxRecords.getAll())
 
   const exportCSV = () => {
     const rows = [
-      ['Invoice ID', 'Tx Hash', 'Amount USDC', 'Platform Fee', 'Net Revenue', 'Tax Reserve', 'Timestamp', 'Customer', 'Refund Tx'],
-      ...records.map(r => [r.invoiceId, r.txHash ?? '', r.amount.toFixed(6), r.fee.toFixed(6), r.net.toFixed(6), r.tax.toFixed(6), new Date(r.timestamp).toISOString(), r.customer ?? '', r.refund?.customerTx ?? '']),
+      ['Invoice ID', 'Tx Hash', 'Amount USDC', 'Platform Fee', 'Net Revenue', 'Tax Reserve', 'Timestamp', 'Customer', 'Refunded USDC', 'Refund Tx'],
+      ...records.map(r => [r.invoiceId, r.txHash ?? '', r.amount.toFixed(6), r.fee.toFixed(6), r.net.toFixed(6), r.tax.toFixed(6), new Date(r.timestamp).toISOString(), r.customer ?? '', refundSummary(r).refunded.toFixed(6), getRefunds(r).filter(e => e.status === 'confirmed' && e.txHash).map(e => e.txHash).join(' ')]),
     ]
     const csv = rows.map(r => r.join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -188,19 +191,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
                   <div className="text-xs mt-0.5 tabular-nums" style={{ color: 'var(--muted)' }}>
                     Fee ${r.fee.toFixed(4)} · Net ${r.net.toFixed(2)}
                   </div>
-                  {r.refund?.completedAt ? (
-                    <span className="inline-block mt-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(192,57,43,0.1)', color: '#c0392b' }}>
-                      Refunded
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => setRefundTarget(r)}
-                      className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors"
-                      style={{ border: '1px solid var(--border)', color: 'var(--ink)', background: 'var(--surface-muted)' }}
-                    >
-                      <RotateCcw size={10} /> Refund
-                    </button>
-                  )}
+                  <RefundControls r={r} onOpen={() => setRefundTarget(r)} />
                 </div>
                 <div className="text-xs tabular-nums flex-shrink-0 text-right" style={{ color: 'var(--subtle)' }}>
                   {new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -228,6 +219,32 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
           onChanged={reloadRecords}
         />
       )}
+    </div>
+  )
+}
+
+function RefundControls({ r, onOpen }: { r: TxRecord; onOpen: () => void }) {
+  const sm = refundSummary(r)
+  const touched = sm.refunded > 0 || sm.pending > 0
+  const fully = sm.remainingMicro === 0 && sm.refunded > 0 && !sm.hasPending
+  const label = fully ? 'Refunded' : sm.hasPending ? 'Check refund' : sm.refunded > 0 ? 'Refund more' : 'Refund'
+  return (
+    <div className="mt-1.5 flex flex-col gap-1">
+      {touched && (
+        <div className="text-[11px] tabular-nums" style={{ color: 'var(--muted)' }}>
+          Refunded ${sm.refunded.toFixed(2)}
+          {sm.pending > 0 ? ` (+$${sm.pending.toFixed(2)} pending)` : ''} · Can still refund ${sm.remaining.toFixed(2)}
+        </div>
+      )}
+      <button
+        onClick={onOpen}
+        className="self-start inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors"
+        style={fully
+          ? { background: 'rgba(192,57,43,0.1)', color: '#c0392b', border: '1px solid transparent' }
+          : { border: '1px solid var(--border)', color: sm.hasPending ? '#b45309' : 'var(--ink)', background: 'var(--surface-muted)' }}
+      >
+        <RotateCcw size={10} /> {label}
+      </button>
     </div>
   )
 }

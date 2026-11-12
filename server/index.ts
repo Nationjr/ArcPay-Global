@@ -20,7 +20,12 @@ const server = Bun.serve({
 
     if (req.method === 'POST' && url.pathname === '/receipt') {
       try {
-        const body = await req.json() as ReceiptPayload
+        const body = await req.json() as ReceiptPayload & { type?: string }
+
+        // Refund receipts are only supported by the deployed Vercel function (api/receipt.js)
+        if (body.type === 'refund') {
+          return json({ error: 'Refund receipts are only available on the deployed site' }, 501)
+        }
 
         if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
           return json({ error: 'Invalid email address' }, 400)
