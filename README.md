@@ -16,7 +16,7 @@ Built with [Arc Studio](https://studio.arc.io)
 - On Android Chrome, accept payment with an **NFC tap** instead of the QR.
 - The app watches the chain, detects the incoming USDC transfer and shows a "Payment Received" screen.
 - Optionally enter the customer's email before charging to send an HTML **receipt** with an explorer link.
-- **Analytics** tab: today's totals, transaction history, CSV export, and contract stat cards.
+- **Analytics** tab: today's totals (including refunded today), total refunded all time, transaction history with an "All sales" or "Refunded only" filter, CSV exports for sales and for refunds, and contract stat cards.
 - **Refunds** on every sale: refund the full amount or just part of it (for example one returned item), with no fee and one wallet confirmation after a small "Are you sure?" window. Each sale shows the amount already refunded and what can still be refunded, and a refund that is waiting for confirmation is counted so it cannot be sent twice.
 - **Refund receipt email**: after a refund, the customer can be emailed a receipt with the amount, the items or reason the merchant typed, the original payment and the balance left.
 - **Settings**: tax percentage, supplier address and share, and a fee recipient address.

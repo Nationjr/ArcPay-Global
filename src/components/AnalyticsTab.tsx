@@ -3,11 +3,10 @@ import { Download, TrendingUp, DollarSign, FileText, BarChart2, ExternalLink, Ro
 import { RefundDialog } from './RefundDialog'
 import { useAccount, useReadContract } from 'wagmi'
 import { Amount } from '@/onchain-money'
-import { OfflineQueue } from '../utils/offlineQueue'
 import { TxRecords, getRefunds, refundSummary, type TxRecord } from '../utils/txRecords'
 import { buildTxExplorerUrl } from '@/onchain-facts'
 
-const ARC_TESTNET_CHAIN_ID = 5042002
+const ARC_CHAIN_ID = 5042
 
 interface Props {
   contractAddress: `0x${string}` | null
@@ -18,6 +17,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
   const { address } = useAccount()
   const [todayDateStr] = useState(() => new Date().toDateString())
   const [refundTarget, setRefundTarget] = useState<TxRecord | null>(null)
+  const [filter, setFilter] = useState<'all' | 'refunded'>('all')
   // Re-read from localStorage on every mount so new transactions appear immediately
   const [records, setRecords] = useState<TxRecord[]>([])
 
@@ -37,7 +37,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
     address: contractAddress ?? undefined,
     abi: contractAbi as never[],
     functionName: 'totalVolumeProcessed',
-    chainId: ARC_TESTNET_CHAIN_ID,
+    chainId: ARC_CHAIN_ID,
     query: { enabled: !!contractAddress, refetchInterval: 10_000, refetchOnWindowFocus: true },
   }) as { data: bigint | undefined }
 
@@ -45,7 +45,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
     address: contractAddress ?? undefined,
     abi: contractAbi as never[],
     functionName: 'totalPlatformFeesCollected',
-    chainId: ARC_TESTNET_CHAIN_ID,
+    chainId: ARC_CHAIN_ID,
     query: { enabled: !!contractAddress, refetchInterval: 10_000, refetchOnWindowFocus: true },
   }) as { data: bigint | undefined }
 
@@ -54,7 +54,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
     abi: contractAbi as never[],
     functionName: 'merchantLiquidBalance',
     args: address ? [address] : undefined,
-    chainId: ARC_TESTNET_CHAIN_ID,
+    chainId: ARC_CHAIN_ID,
     query: { enabled: !!contractAddress && !!address, refetchInterval: 10_000, refetchOnWindowFocus: true },
   }) as { data: bigint | undefined }
 
@@ -63,7 +63,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
     abi: contractAbi as never[],
     functionName: 'merchantTaxReserve',
     args: address ? [address] : undefined,
-    chainId: ARC_TESTNET_CHAIN_ID,
+    chainId: ARC_CHAIN_ID,
     query: { enabled: !!contractAddress && !!address, refetchInterval: 10_000, refetchOnWindowFocus: true },
   }) as { data: bigint | undefined }
 
@@ -86,21 +86,51 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
   const dailyFees = todayRecords.reduce((s, r) => s + r.fee, 0)
   const dailyNet = todayRecords.reduce((s, r) => s + r.net * keepFactor(r), 0)
 
+  // Refund totals, counted by the day each refund was sent
+  const totalRefundedAll = records.reduce((s, r) => s + refundSummary(r).refunded, 0)
+  const refundedToday = records
+    .flatMap(r => getRefunds(r))
+    .filter(e => e.status === 'confirmed' && new Date(e.createdAt).toDateString() === todayDateStr)
+    .reduce((s, e) => s + e.amount, 0)
+
   const reloadRecords = () => setRecords(TxRecords.getAll())
 
-  const exportCSV = () => {
-    const rows = [
-      ['Invoice ID', 'Tx Hash', 'Amount USDC', 'Platform Fee', 'Net Revenue', 'Tax Reserve', 'Timestamp', 'Customer', 'Refunded USDC', 'Refund Tx'],
-      ...records.map(r => [r.invoiceId, r.txHash ?? '', r.amount.toFixed(6), r.fee.toFixed(6), r.net.toFixed(6), r.tax.toFixed(6), new Date(r.timestamp).toISOString(), r.customer ?? '', refundSummary(r).refunded.toFixed(6), getRefunds(r).filter(e => e.status === 'confirmed' && e.txHash).map(e => e.txHash).join(' ')]),
-    ]
-    const csv = rows.map(r => r.join(',')).join('\n')
+  const shown = filter === 'refunded'
+    ? records.filter(r => { const sm = refundSummary(r); return sm.refunded > 0 || sm.pending > 0 })
+    : records
+
+  const csvCell = (v: string | number) => {
+    const t = String(v)
+    return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t
+  }
+  const downloadCsv = (name: string, rows: (string | number)[][]) => {
+    const csv = rows.map(r => r.map(csvCell).join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `arcpay_export_${Date.now()}.csv`
+    a.download = name
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const exportCSV = () => {
+    downloadCsv(`arcpay_export_${Date.now()}.csv`, [
+      ['Invoice ID', 'Tx Hash', 'Amount USDC', 'Platform Fee', 'Net Revenue', 'Tax Reserve', 'Timestamp', 'Customer', 'Refunded USDC', 'Refund Tx'],
+      ...records.map(r => [r.invoiceId, r.txHash ?? '', r.amount.toFixed(6), r.fee.toFixed(6), r.net.toFixed(6), r.tax.toFixed(6), new Date(r.timestamp).toISOString(), r.customer ?? '', refundSummary(r).refunded.toFixed(6), getRefunds(r).filter(e => e.status === 'confirmed' && e.txHash).map(e => e.txHash).join(' ')]),
+    ])
+  }
+
+  // One row per refund
+  const exportRefundsCSV = () => {
+    downloadCsv(`arcpay_refunds_${Date.now()}.csv`, [
+      ['Invoice ID', 'Sale Tx Hash', 'Sale Amount USDC', 'Refund Amount USDC', 'Items / Reason', 'Refund Tx', 'Refund Time', 'Customer', 'Receipt Emailed'],
+      ...records.flatMap(r =>
+        getRefunds(r)
+          .filter(e => e.status === 'confirmed')
+          .map(e => [r.invoiceId, r.txHash ?? '', r.amount.toFixed(6), e.amount.toFixed(6), e.note ?? '', e.txHash ?? '', new Date(e.createdAt).toISOString(), r.customer ?? '', e.emailedAt ? 'Yes' : 'No']),
+      ),
+    ])
   }
 
   const stats = [
@@ -108,6 +138,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
     { icon: TrendingUp, label: 'Net Revenue', value: fmt(liquidBalance), sub: 'Your liquid balance' },
     { icon: FileText, label: 'Tax Reserve', value: fmt(taxReserve), sub: 'Collected for taxes' },
     { icon: BarChart2, label: 'Platform Fees', value: totalFees !== undefined ? fmt(totalFees) : `$${dailyFees.toFixed(4)}`, sub: '0.5% collected all-time' },
+    { icon: RotateCcw, label: 'Total Refunded', value: `$${totalRefundedAll.toFixed(2)}`, sub: 'All time, from this device', wide: true },
   ]
 
   return (
@@ -126,8 +157,8 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3">
-        {stats.map(({ icon: Icon, label, value, sub }) => (
-          <div key={label} className="rounded-2xl p-4" style={{ background: 'var(--surface-strong)', border: '1px solid var(--border)' }}>
+        {stats.map(({ icon: Icon, label, value, sub, wide }) => (
+          <div key={label} className={`rounded-2xl p-4${wide ? ' col-span-2' : ''}`} style={{ background: 'var(--surface-strong)', border: '1px solid var(--border)' }}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--surface-muted)' }}>
                 <Icon size={14} style={{ color: 'var(--accent)' }} />
@@ -147,7 +178,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
           { label: 'Total processed', val: `$${dailyTotal.toFixed(2)}` },
           { label: 'Net profit', val: `$${dailyNet.toFixed(2)}` },
           { label: 'Platform fees sent', val: `$${dailyFees.toFixed(4)}` },
-          { label: 'Pending offline', val: `${OfflineQueue.count()} payments` },
+          { label: 'Refunded today', val: `$${refundedToday.toFixed(2)}` },
         ].map(({ label, val }) => (
           <div key={label} className="flex justify-between py-2 text-sm" style={{ borderBottom: '1px solid var(--border)' }}>
             <span style={{ color: 'var(--muted)' }}>{label}</span>
@@ -161,16 +192,30 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
         <div className="px-5 pt-4 pb-3 flex items-center justify-between">
           <div className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>Transaction History</div>
           <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--surface-muted)', color: 'var(--muted)' }}>
-            {records.length} total
+            {shown.length} {filter === 'refunded' ? 'refunded' : 'total'}
           </span>
         </div>
-        {records.length === 0 ? (
+        <div className="px-5 pb-3 flex gap-2">
+          {([['all', 'All sales'], ['refunded', 'Refunded only']] as const).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setFilter(id)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
+              style={filter === id
+                ? { background: 'var(--accent)', color: '#fff', border: '1px solid var(--accent)' }
+                : { background: 'var(--surface-muted)', color: 'var(--muted)', border: '1px solid var(--border)' }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {shown.length === 0 ? (
           <div className="px-5 pb-5 text-sm" style={{ color: 'var(--muted)' }}>
-            No transactions yet. Complete a payment to see it here.
+            {filter === 'refunded' ? 'No refunded sales yet.' : 'No transactions yet. Complete a payment to see it here.'}
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-            {[...records].reverse().slice(0, 20).map((r, i) => (
+            {[...shown].reverse().slice(0, 20).map((r, i) => (
               <div key={i} className="px-5 py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
@@ -179,7 +224,7 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
                     </span>
                     {r.txHash && (
                       <a
-                        href={buildTxExplorerUrl(ARC_TESTNET_CHAIN_ID, r.txHash)}
+                        href={buildTxExplorerUrl(ARC_CHAIN_ID, r.txHash)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-shrink-0"
@@ -210,6 +255,13 @@ export function AnalyticsTab({ contractAddress, contractAbi }: Props) {
         style={{ background: 'var(--surface-strong)', border: '1px solid var(--border)', color: 'var(--ink)' }}
       >
         <Download size={16} /> Export CSV for Tax Accounting
+      </button>
+      <button
+        onClick={exportRefundsCSV}
+        className="w-full py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
+        style={{ background: 'var(--surface-strong)', border: '1px solid var(--border)', color: 'var(--ink)' }}
+      >
+        <Download size={16} /> Export Refunds CSV
       </button>
 
       {refundTarget && (
